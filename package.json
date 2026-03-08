@@ -1,0 +1,26 @@
+{
+  "name": "node-postgresql-restapi",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "node --env-file .env --watch src/index.js",
+    "lint": "eslint ."
+  },
+  "keywords": [],
+  "author": "",
+  "dependencies": {
+    "@google/genai": "^0.2.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.19.2",
+    "morgan": "^1.10.0",
+    "node-cron": "^4.2.1",
+    "nodemailer": "^8.0.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.1.1",
+    "eslint": "^9.1.0"
+  }
+}
