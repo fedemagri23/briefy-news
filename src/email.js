@@ -178,54 +178,21 @@ const generateNewsHTML = (newsData, modelUsed = null, imageCids = {}) => {
     return date.toLocaleDateString("es-AR", options);
   };
 
-  // Función para obtener el color de una categoría (con variantes normalizadas)
-  const getCategoryColor = (categoriaOriginal, categoriaNormalizada) => {
-    // Buscar color por categoría original (exacta)
-    if (NEWS_CATEGORY_COLOR_MAP[categoriaOriginal]) {
-      return NEWS_CATEGORY_COLOR_MAP[categoriaOriginal];
-    }
-    
-    // Buscar en las categorías configuradas (normalizadas)
-    for (const configCategory of NEWS_CATEGORIES) {
-      const configCategoryLower = configCategory.toLowerCase();
-      const configCategoryNormalized = configCategoryLower
-        .replace(/ó/g, "o")
-        .replace(/í/g, "i")
-        .replace(/é/g, "e")
-        .replace(/á/g, "a")
-        .replace(/ú/g, "u");
-      
-      if (categoriaNormalizada === configCategoryNormalized || 
-          categoriaNormalizada.includes(configCategoryNormalized) ||
-          configCategoryNormalized.includes(categoriaNormalizada)) {
-        if (NEWS_CATEGORY_COLOR_MAP[configCategory]) {
-          return NEWS_CATEGORY_COLOR_MAP[configCategory];
-        }
-      }
-    }
-    
-    // Buscar por variantes comunes
-    if (categoriaNormalizada.includes("politic")) {
-      return NEWS_CATEGORY_COLOR_MAP['Político'] || NEWS_CATEGORY_COLOR_MAP['General'] || '#6c757d';
-    }
-    if (categoriaNormalizada.includes("economic")) {
-      return NEWS_CATEGORY_COLOR_MAP['Económico'] || NEWS_CATEGORY_COLOR_MAP['General'] || '#6c757d';
-    }
-    if (categoriaNormalizada.includes("social")) {
-      return NEWS_CATEGORY_COLOR_MAP['Social'] || NEWS_CATEGORY_COLOR_MAP['General'] || '#6c757d';
-    }
-    
-    // Por defecto
-    return NEWS_CATEGORY_COLOR_MAP['General'] || '#6c757d';
-  };
-
   const renderNewsItem = (noticia, index, imageCids = {}) => {
     // Normalizar categoría usando la función inteligente
     const categoriaOriginal = noticia.categoria || "General";
     const categoriaNormalizada = normalizeCategory(categoriaOriginal);
-    
-    // Obtener color de la categoría
-    const categoriaColor = getCategoryColor(categoriaOriginal, categoriaNormalizada);
+
+    // Color de la categoría según clave normalizada (coincide con normalizeCategory)
+    const colorKey = categoriaNormalizada
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/\s+/g, "");
+    const categoriaColor =
+      NEWS_CATEGORY_COLOR_MAP[colorKey] ||
+      NEWS_CATEGORY_COLOR_MAP.general ||
+      "#6c757d";
 
     // Debug: mostrar qué categoría se está usando (solo para las primeras 3 noticias)
     if (index < 3) {
@@ -416,15 +383,15 @@ export const sendNewsEmail = async (subject, body, modelUsed = null) => {
     // Preparar attachments con CID para las imágenes
     const imageCids = {};
     
-    // Crear attachments para cada categoría única
+    // Crear attachments solo para las categorías realmente usadas en las noticias
     const categoriasUsadas = new Set();
     body.noticias.forEach(noticia => {
       const categoriaNormalizada = normalizeCategory(noticia.categoria);
       categoriasUsadas.add(categoriaNormalizada);
     });
     
-    // Agregar "general" por si acaso
-    categoriasUsadas.add("general");
+    // Solo agregar "general" si realmente se necesita (alguna noticia lo usa)
+    // No agregarlo automáticamente para evitar adjuntar imágenes innecesarias
     
     console.log(`📋 Categorías encontradas en noticias:`, Array.from(categoriasUsadas));
     console.log(`📋 Rutas de imágenes disponibles:`, Object.keys(categoryImagePaths));

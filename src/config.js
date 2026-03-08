@@ -67,18 +67,25 @@ export const NEWS_CATEGORY_IMAGE_MAP = process.env.NEWS_CATEGORY_IMAGE_MAP
     };
 
 // Mapeo de categorías a colores (configurable)
-// Formato: "Categoría:#colorhex,Categoría2:#colorhex2"
-// Si no se configura, se usa el mapeo por defecto
-export const NEWS_CATEGORY_COLOR_MAP = process.env.NEWS_CATEGORY_COLOR_MAP
+// Formato ENV sugerido: "Politico:#e53935,Economico:#1e88e5,Social:#43a047,General:#6c757d"
+// Internamente se normalizan las claves para que coincidan con las devueltas por normalizeCategory
+const rawColorMap = process.env.NEWS_CATEGORY_COLOR_MAP
   ? Object.fromEntries(
       process.env.NEWS_CATEGORY_COLOR_MAP.split(',').map(item => {
-        const [category, color] = item.split(':').map(s => s.trim());
-        return [category, color];
+        const [rawCategory, color] = item.split(':').map(s => s.trim());
+        const normalized = rawCategory
+          .toLowerCase()
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '') // quitar tildes
+          .replace(/\s+/g, ''); // quitar espacios
+        return [normalized, color];
       })
     )
   : {
-      'Político': '#e53935',
-      'Económico': '#1e88e5',
-      'Social': '#43a047',
-      'General': '#6c757d'
+      politico: '#e53935',
+      economico: '#1e88e5',
+      social: '#43a047',
+      general: '#6c757d'
     };
+
+export const NEWS_CATEGORY_COLOR_MAP = rawColorMap;
