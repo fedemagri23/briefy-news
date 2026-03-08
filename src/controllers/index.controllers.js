@@ -1,23 +1,36 @@
 import { GoogleGenAI } from "@google/genai";
 import { sendNewsEmail } from "../email.js";
+import { GEMINI_MODELS, EMAIL_SUBJECT_PREFIX, NEWS_COUNT_ARGENTINA, NEWS_COUNT_INTERNATIONAL, NEWS_CATEGORIES } from "../config.js";
 
 const ai = new GoogleGenAI({});
 
 // Función interna que obtiene las noticias y envía el email
 const fetchAndSendNews = async () => {
+  const totalNews = NEWS_COUNT_ARGENTINA + NEWS_COUNT_INTERNATIONAL;
+  const categoriasLista = NEWS_CATEGORIES.join(', ');
+  
   const prompt = `
     Eres un asistente experto en noticias. 
-    Busca y resume en español 10 noticias de las ultimas 24 horas, 5 de argentina y 5 internacionales, 
-    en ambos casos las más relevantes dentro del ámbito economico, social, politico y general.
+    Busca y resume en español ${totalNews} noticias de las ultimas 24 horas, ${NEWS_COUNT_ARGENTINA} de argentina y ${NEWS_COUNT_INTERNATIONAL} internacionales, 
+    en ambos casos las más relevantes.
     Es importante verificar que relmente las noticias son de menos de 24 horas de antiguedad,
     si ves que alguna no cumple esto o no es muy relevvante no dudes en descartarla y buscar otra,
     decides tu con cual quedarte, no me preguntes.
     Los resumenes deben ser tecnicamente adecuados, no mas de 1 parrafo, y deben estar pensados para enterar 
     al lector sobre lo que sucedió, y que este pueda definir si quiere leer la noticia completa porque es de
     su interés o no.
+    
+    CATEGORÍAS DISPONIBLES: ${categoriasLista}
+    Para cada noticia, debes asignar la categoría que mejor se adecue al contenido de la noticia.
+    Usa EXACTAMENTE uno de estos nombres de categoría: ${categoriasLista}
+    
     Devuélvelas en formato JSON con este esquema: 
     { "fecha": "YYYY-MM-DD", "fuente": "Gemini", "noticias": [ { "titulo": string, "categoria": string, "resumen": string, "pais": string, "link": string } ] }.
-    No incluyas ningún texto fuera del JSON.
+    
+    IMPORTANTE: 
+    - Debes devolver exactamente ${NEWS_COUNT_ARGENTINA} noticias de Argentina y ${NEWS_COUNT_INTERNATIONAL} noticias internacionales.
+    - El campo "categoria" DEBE ser uno de estos valores exactos: ${categoriasLista}
+    - No incluyas ningún texto fuera del JSON.
   `;
 
   const groundingTool = {
@@ -28,11 +41,11 @@ const fetchAndSendNews = async () => {
     tools: [groundingTool],
   };
 
-  const models = ["gemini-3-flash-preview", "gemini-2.5-flash"];
+  const models = GEMINI_MODELS.length > 0 ? GEMINI_MODELS : ["gemini-3-flash-preview", "gemini-2.5-flash"];
   let lastError = null;
   let usedModel = null;
 
-  // Intentar primero con gemini-3-flash-preview, si falla usar gemini-2.5-flash
+  // Intentar con cada modelo en orden hasta que uno funcione
   for (const model of models) {
     try {
       console.log(`Intentando obtener noticias con modelo: ${model}`);
@@ -54,7 +67,7 @@ const fetchAndSendNews = async () => {
         json.modelo_usado = model;
         // Enviar email con el objeto JSON (se generará HTML profesional)
         await sendNewsEmail(
-          `📰 Noticias Diarias - ${json.fecha || new Date().toISOString().split("T")[0]}`,
+          `${EMAIL_SUBJECT_PREFIX} - ${json.fecha || new Date().toISOString().split("T")[0]}`,
           json
         );
         console.log(`✅ Noticias obtenidas exitosamente con modelo: ${model}`);
