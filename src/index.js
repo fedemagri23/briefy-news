@@ -4,6 +4,9 @@ import morgan from "morgan";
 import { PORT } from "./config.js";
 import newsRoutes from "./routes/index.routes.js";
 import { startNewsScheduler } from "./scheduler.js";
+import dns from "dns";
+
+dns.setDefaultResultOrder("ipv4first");
 
 const app = express();
 
