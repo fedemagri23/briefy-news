@@ -1,27 +1,31 @@
 {
-  "name": "node-postgresql-restapi",
+  "name": "briefy-news",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  "type": "module",
   "scripts": {
-    "dev": "node --env-file .env --watch src/index.js",
-    "start": "node src/index.js",
-    "lint": "eslint ."
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fedemagri23/briefy-news.git"
   },
   "keywords": [],
   "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/fedemagri23/briefy-news/issues"
+  },
+  "homepage": "https://github.com/fedemagri23/briefy-news#readme",
   "dependencies": {
-    "@google/genai": "^0.2.0",
-    "cors": "^2.8.5",
-    "dotenv": "^16.4.7",
-    "express": "^4.19.2",
-    "morgan": "^1.10.0",
-    "node-cron": "^4.2.1",
-    "nodemailer": "^8.0.1"
+    "@google/genai": "^1.44.0",
+    "nodemailer": "^8.0.2"
   },
   "devDependencies": {
-    "@eslint/js": "^9.1.1",
-    "eslint": "^9.1.0"
+    "@types/node": "^25.4.0",
+    "@types/nodemailer": "^7.0.11",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
   }
 }
