@@ -12,5 +12,5 @@ export const config = {
     .split(",")
     .map(e => e.trim())
     .filter(Boolean),
-  newsTopics: ["tecnología", "ciencia", "economía global"], // fácil de extender
+  newsTopics: ["tecnología", "ciencia", "economía global"],
 };
