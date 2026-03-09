@@ -1,6 +1,10 @@
+import { config } from "node:process";
+import "dotenv/config";
+
 import { fetchNewsSummary } from "./news/geminiService.js";
 import { EmailNotificationService } from "./notification/emailService.js";
 import { ConfigSubscriberRepository } from "./subscribers/configAdapter.js";
+import "dotenv/config";
 
 async function main(): Promise<void> {
   console.log("🚀 Iniciando news digest...");

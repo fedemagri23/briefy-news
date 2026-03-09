@@ -1,7 +1,9 @@
 import { GoogleGenAI } from "@google/genai";
 import { config } from "../config/index.js";
 
-const ai = new GoogleGenAI({});
+const ai = new GoogleGenAI({
+  apiKey: process.env.GEMINI_API_KEY ?? "",
+});
 
 export interface NewsSummary {
     title: string;
