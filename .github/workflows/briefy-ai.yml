@@ -2,7 +2,7 @@ name: Briefy AI Daily News
 
 on:
   schedule:
-    - cron: "0 09 * * *"  # 12:00 Argentina (UTC-3) = 15:00 UTC
+    - cron: "0 15 * * *"  # 12:00 Argentina (UTC-3) = 15:00 UTC
   workflow_dispatch:        # permite ejecutarlo manualmente desde GitHub
 
 jobs:
