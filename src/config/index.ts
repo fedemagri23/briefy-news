@@ -12,7 +12,9 @@ export const config = {
         .split(",")
         .map(e => e.trim())
         .filter(Boolean),
-    newsTopics: ["tecnología", "ciencia", "economía global"],
-    newsCountArgentina: 5,
-    newsCountInternational: 5,
+    newsTopics: (process.env["NEWS_TOPICS"] ?? "tecnología,ciencia,economía global")
+        .split(",")
+        .map((t) => t.trim()),
+    newsCountArgentina: Number(process.env["NEWS_COUNT_ARGENTINA"] ?? 5),
+    newsCountInternational: Number(process.env["NEWS_COUNT_INTERNATIONAL"] ?? 5),
 };

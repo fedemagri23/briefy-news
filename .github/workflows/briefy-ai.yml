@@ -30,3 +30,6 @@ jobs:
           SMTP_PASS: ${{ secrets.SMTP_PASS }}
           SMTP_FROM: ${{ secrets.SMTP_FROM }}
           SUBSCRIBERS: ${{ secrets.SUBSCRIBERS }}
+          NEWS_TOPICS: ${{ vars.NEWS_TOPICS }}                          # ← vars, no secrets
+          NEWS_COUNT_ARGENTINA: ${{ vars.NEWS_COUNT_ARGENTINA }}
+          NEWS_COUNT_INTERNATIONAL: ${{ vars.NEWS_COUNT_INTERNATIONAL }}
