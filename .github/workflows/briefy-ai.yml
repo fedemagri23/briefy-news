@@ -1,0 +1,32 @@
+name: Briefy AI Daily News
+
+on:
+  schedule:
+    - cron: "0 15 * * *"  # 12:00 Argentina (UTC-3) = 15:00 UTC
+  workflow_dispatch:        # permite ejecutarlo manualmente desde GitHub
+
+jobs:
+  send-digest:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Ejecutar digest
+        run: npm start
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          SMTP_FROM: ${{ secrets.SMTP_FROM }}
+          SUBSCRIBERS: ${{ secrets.SUBSCRIBERS }}

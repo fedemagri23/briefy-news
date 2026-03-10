@@ -1,60 +1,78 @@
 import { GoogleGenAI } from "@google/genai";
 import { config } from "../config/index.js";
+import type { NewsDigest } from "./types.js";
 
 const ai = new GoogleGenAI({
-  apiKey: process.env.GEMINI_API_KEY ?? "",
+  apiKey: process.env["GEMINI_API_KEY"] ?? "",
 });
 
-export interface NewsSummary {
-    title: string;
-    body: string;
-    date: string;
+function parseDigest(raw: string): NewsDigest {
+  const clean = raw
+    .replace(/^```json\s*/i, "")
+    .replace(/^```\s*/i, "")
+    .replace(/```\s*$/i, "")
+    .trim();
+
+  const parsed: unknown = JSON.parse(clean);
+
+  if (
+    typeof parsed !== "object" ||
+    parsed === null ||
+    !("sections" in parsed)
+  ) {
+    throw new Error("La respuesta de Gemini no tiene la estructura esperada");
+  }
+
+  return parsed as NewsDigest;
 }
 
-export async function fetchNewsSummary(): Promise<NewsSummary> {
-    const today = new Date().toLocaleDateString("es-AR", {
-        weekday: "long",
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-    });
+export async function fetchNewsSummary(): Promise<NewsDigest> {
+  const today = new Date().toLocaleDateString("es-AR", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
 
-    const topics = config.newsTopics.join(", ");
+  const topics = config.newsTopics.join(", ");
 
-    const prompt = `
+  const prompt = `
     Hoy es ${today}.
-    Actuá como un periodista. Buscá y resumí las noticias más importantes del día
-    sobre estos temas: ${topics}.
+    Actuás como un periodista. Buscá y resumí las noticias más importantes del día sobre estos temas: ${topics}.
 
-    Formato de respuesta:
-    - Un título general para el digest
-    - Entre 5 y 8 noticias, cada una con: título, 2-3 oraciones de resumen, fuente si la conocés
-    - Tono: informativo, neutral, en español
+    Devolvé ÚNICAMENTE un JSON válido con esta estructura exacta, sin explicaciones ni markdown:
 
-    Respondé en HTML simple (solo <h2>, <h3>, <p>, <ul>, <li>, sin estilos inline).
-    `;
+    {
+      "date": "${today}",
+      "sections": [
+        {
+          "type": "argentina" | "international",
+          "news": [
+            {
+              "title": "Título de la noticia",
+              "summary": "2 a 6 oraciones de resumen en español.",
+              "source": {
+                "name": "Nombre del medio",
+                "url": "https://link-a-la-noticia.com"
+              }
+            }
+          ]
+        }
+      ]
+    }
 
-    const groundingTool = {
-        googleSearch: {},
-    };
+    Incluí exactamente ${config.newsCountArgentina} noticias de Argentina y ${config.newsCountInternational} internacionales.
+    Tono: informativo, neutral, en español.
+  `;
 
-    const geminiConfig = {
-        tools: [groundingTool],
-    };
+  const response = await ai.models.generateContent({
+    model: "gemini-2.5-flash",
+    contents: prompt,
+    config: {
+      tools: [{ googleSearch: {} }],
+    },
+  });
 
-    const response = await ai.models.generateContent({
-        model: "gemini-2.5-flash",
-        contents: prompt,
-        config: geminiConfig,
-    });
-
-    const body = response.text ?? "";
-
-    return {
-        title: `Digest de noticias — ${today}`,
-        body,
-        date: today,
-    };
-
-
+  const raw = response.text ?? "";
+  return parseDigest(raw);
 }
