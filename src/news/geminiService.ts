@@ -63,6 +63,7 @@ export async function fetchNewsSummary(): Promise<NewsDigest> {
 
     Incluí exactamente ${config.newsCountArgentina} noticias de Argentina y ${config.newsCountInternational} internacionales.
     Tono: informativo, neutral, en español.
+    La búsqueda de noticias debe ser profunda, descarta aquellas noticias que no creas lo suficientemente relevantes y selecciona aquellas que si.
   `;
 
   const response = await ai.models.generateContent({
